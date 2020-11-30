@@ -41,6 +41,7 @@ public class Agent extends AbstractObservableAgent {
      */
     public void stopCounting() {
         this.stop = true;
+        this.getPropertyChangeSupport().firePropertyChange("stop", false, true);
     }
 
     /**

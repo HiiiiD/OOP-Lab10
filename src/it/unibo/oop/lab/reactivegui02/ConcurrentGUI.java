@@ -35,7 +35,15 @@ public class ConcurrentGUI {
         /*
          * Add a listener to the counter agent
          */
-        this.counterAgent.addListener(pChangeEvent -> counterLabel.setText(String.valueOf(pChangeEvent.getNewValue())));
+        this.counterAgent.addListener(pChangeEvent -> {
+            if ("counter".equals(pChangeEvent.getPropertyName())) {
+                counterLabel.setText(String.valueOf(pChangeEvent.getNewValue()));
+            } else {
+                upButton.setEnabled(false);
+                downButton.setEnabled(false);
+                stopButton.setEnabled(false);
+            }
+        });
 
         /*
          * Start the counter agent
