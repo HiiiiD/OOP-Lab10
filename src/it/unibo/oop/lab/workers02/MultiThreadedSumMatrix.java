@@ -4,8 +4,8 @@
 package it.unibo.oop.lab.workers02;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 /**
@@ -19,7 +19,7 @@ public class MultiThreadedSumMatrix implements SumMatrix {
         this.nThread = nThread;
     }
 
-    private static class Worker extends Thread {
+    static class Worker extends Thread {
 
         private final double[][] matrix;
 
@@ -34,18 +34,38 @@ public class MultiThreadedSumMatrix implements SumMatrix {
 
         @Override
         public void run() {
-            this.result = Stream.of(this.matrix).skip(this.range.getYStartIndex()).limit(this.range.getYSize())
-                    .flatMap(row -> Stream.of(row).skip(this.range.getXStartIndex()).limit(this.range.getXSize()))
-                    .mapToDouble(row -> Arrays.stream(row).sum()).sum();
+            /*
+             * Check if i've gone too far with indices
+             */
+            if (this.range.getXStartIndex() >= this.matrix[0].length || this.range.getYStartIndex() >= this.matrix.length) {
+                return;
+            }
+            /*
+             * Clamp the size to make it not greater than what is possible
+             */
+            final int xSize = this.range.getXEndIndex() >= this.matrix[0].length
+                    ? this.matrix[0].length - this.range.getXStartIndex()
+                    : this.range.getXSize();
+            final int ySize = this.range.getYEndIndex() >= this.matrix.length ? this.matrix.length - this.range.getYStartIndex()
+                    : this.range.getYSize();
+
+            this.result = Stream.of(this.matrix).skip(this.range.getYStartIndex()).limit(ySize)
+                    .flatMap(row -> Stream.of(row).skip(this.range.getXStartIndex()).limit(xSize))
+                    .mapToDouble(row -> DoubleStream.of(row).sum()).sum();
         }
 
         public double getResult() {
             return this.result;
         }
 
+        @Override
+        public String toString() {
+            return "Worker [range=" + this.range + "]";
+        }
+
     }
 
-    private static class MatrixRange {
+    static class MatrixRange {
 
         private final int xStartIndex;
         private final int yStartIndex;
@@ -95,6 +115,30 @@ public class MultiThreadedSumMatrix implements SumMatrix {
             return this.ySize;
         }
 
+        /**
+         * Get the X end index.
+         * 
+         * @return the Y end index
+         */
+        public int getXEndIndex() {
+            return this.xStartIndex + this.xSize - 1;
+        }
+
+        /**
+         * Get the Y end index.
+         * 
+         * @return the Y end index
+         */
+        public int getYEndIndex() {
+            return this.yStartIndex + this.ySize - 1;
+        }
+
+        @Override
+        public String toString() {
+            return "MatrixRange [xStartIndex=" + this.xStartIndex + ", yStartIndex=" + this.yStartIndex + ", xSize=" + this.xSize
+                    + ", ySize=" + this.ySize + "]";
+        }
+
     }
 
     /**
@@ -104,6 +148,9 @@ public class MultiThreadedSumMatrix implements SumMatrix {
     public double sum(final double[][] matrix) {
         final int matrixRowSize = matrix.length;
         final int matrixColumnSize = matrix[0].length;
+        /**
+         * I used the formula that has been used in workers01
+         */
         final int columnSize = matrixColumnSize % this.nThread + matrixColumnSize / this.nThread;
         final int rowSize = matrixRowSize % this.nThread + matrixRowSize / this.nThread;
 
@@ -111,9 +158,7 @@ public class MultiThreadedSumMatrix implements SumMatrix {
 
         for (int i = 0; i < matrixColumnSize; i += columnSize) {
             for (int j = 0; j < matrixRowSize; j += rowSize) {
-                final int columnsSizeToUse = (i + columnSize) > matrixColumnSize ? (matrixColumnSize - i) : columnSize;
-                final int rowsSizeToUse = (j + rowSize) > matrixRowSize ? (matrixRowSize - j) : rowSize;
-                final MatrixRange mRange = new MatrixRange(i, j, columnsSizeToUse, rowsSizeToUse);
+                final MatrixRange mRange = new MatrixRange(i, j, columnSize, rowSize);
                 workers.add(new Worker(matrix, mRange));
             }
         }
