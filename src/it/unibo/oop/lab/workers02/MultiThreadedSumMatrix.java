@@ -4,8 +4,9 @@
 package it.unibo.oop.lab.workers02;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 /**
  *
@@ -33,12 +34,9 @@ public class MultiThreadedSumMatrix implements SumMatrix {
 
         @Override
         public void run() {
-            DoubleStream mainStream = DoubleStream.empty();
-            for (int i = this.range.getYStartIndex(); i < this.range.getYStartIndex() + this.range.getYSize(); i++) {
-                mainStream = DoubleStream.concat(mainStream,
-                        DoubleStream.of(this.matrix[i]).skip(this.range.getXStartIndex()).limit(this.range.getXSize()));
-            }
-            this.result = mainStream.sum();
+            this.result = Stream.of(this.matrix).skip(this.range.getYStartIndex()).limit(this.range.getYSize())
+                    .flatMap(row -> Stream.of(row).skip(this.range.getXStartIndex()).limit(this.range.getXSize()))
+                    .mapToDouble(row -> Arrays.stream(row).sum()).sum();
         }
 
         public double getResult() {
