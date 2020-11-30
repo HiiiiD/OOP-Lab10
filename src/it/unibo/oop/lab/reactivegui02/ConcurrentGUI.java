@@ -4,8 +4,6 @@
 package it.unibo.oop.lab.reactivegui02;
 
 import java.awt.FlowLayout;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -72,79 +70,4 @@ public class ConcurrentGUI {
         return this.counterAgent;
     }
 
-    protected static class Agent extends Thread {
-
-        private volatile boolean up = true;
-        private volatile boolean stop;
-        private volatile int counter;
-        /*
-         * I use the property change support to handle the value change of the counter
-         */
-        private final PropertyChangeSupport pChangeSupport = new PropertyChangeSupport(this);
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void run() {
-            while (!this.stop) {
-                try {
-                    Thread.sleep(100);
-                } catch (final InterruptedException e) {
-                    e.printStackTrace();
-                }
-                final int oldValue = this.counter;
-                if (this.up) {
-                    this.counter++;
-                } else {
-                    this.counter--;
-                }
-                /*
-                 * Fire the property change for the counter
-                 */
-                this.pChangeSupport.firePropertyChange("counter", oldValue, this.counter);
-            }
-        }
-
-        /**
-         * Stop counting.
-         */
-        public void stopCounting() {
-            this.stop = true;
-        }
-
-        /**
-         * Start incrementing.
-         */
-        public void doIncrement() {
-            this.up = true;
-        }
-
-        /**
-         * Start decrementing.
-         */
-        public void doDecrement() {
-            this.up = false;
-        }
-
-        /**
-         * Get the current counter.
-         * 
-         * @return the current counter
-         */
-        public synchronized int getCounter() {
-            return this.counter;
-        }
-
-        /**
-         * Add a listener for the property change.
-         * 
-         * @param listener
-         *                     listener to add
-         */
-        public void addListener(final PropertyChangeListener listener) {
-            this.pChangeSupport.addPropertyChangeListener(listener);
-        }
-
-    }
 }
