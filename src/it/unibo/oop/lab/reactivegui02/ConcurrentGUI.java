@@ -17,8 +17,11 @@ import javax.swing.JPanel;
  */
 public class ConcurrentGUI {
 
+    private final JFrame mainFrame;
+    private final Agent counterAgent;
+
     public ConcurrentGUI() {
-        final JFrame mainFrame = new JFrame("Concurrent GUI");
+        this.mainFrame = new JFrame("Concurrent GUI");
 
         final JPanel mainPanel = new JPanel();
 
@@ -29,22 +32,22 @@ public class ConcurrentGUI {
         final JButton downButton = new JButton("down");
         final JButton stopButton = new JButton("stop");
 
-        final Agent counterAgent = new Agent();
+        this.counterAgent = new Agent();
 
         /*
          * Add a listener to the counter agent
          */
-        counterAgent.addListener(pChangeEvent -> counterLabel.setText(String.valueOf(pChangeEvent.getNewValue())));
+        this.counterAgent.addListener(pChangeEvent -> counterLabel.setText(String.valueOf(pChangeEvent.getNewValue())));
 
         /*
          * Start the counter agent
          */
-        counterAgent.start();
+        this.counterAgent.start();
 
-        upButton.addActionListener(event -> counterAgent.doIncrement());
-        downButton.addActionListener(event -> counterAgent.doDecrement());
+        upButton.addActionListener(event -> this.counterAgent.doIncrement());
+        downButton.addActionListener(event -> this.counterAgent.doDecrement());
         stopButton.addActionListener(event -> {
-            counterAgent.stopCounting();
+            this.counterAgent.stopCounting();
             upButton.setEnabled(false);
             downButton.setEnabled(false);
             stopButton.setEnabled(false);
@@ -55,13 +58,21 @@ public class ConcurrentGUI {
         mainPanel.add(downButton);
         mainPanel.add(stopButton);
 
-        mainFrame.setContentPane(mainPanel);
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.pack();
-        mainFrame.setVisible(true);
+        this.mainFrame.setContentPane(mainPanel);
+        this.mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.mainFrame.pack();
+        this.mainFrame.setVisible(true);
     }
 
-    private static class Agent extends Thread {
+    protected JFrame getMainFrame() {
+        return this.mainFrame;
+    }
+
+    protected Agent getCounterAgent() {
+        return this.counterAgent;
+    }
+
+    protected static class Agent extends Thread {
 
         private volatile boolean up = true;
         private volatile boolean stop;
