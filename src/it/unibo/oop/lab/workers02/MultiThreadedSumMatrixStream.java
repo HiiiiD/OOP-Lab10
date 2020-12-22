@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package it.unibo.oop.lab.workers02;
 
@@ -39,7 +39,7 @@ public class MultiThreadedSumMatrixStream implements SumMatrix {
      * Copied from
      * {@link it.unibo.oop.lab.workers01.MultiThreadedListSumWithStreams} to use
      * method reference without handling errors.
-     * 
+     *
      * @param target
      */
     private static void joinUninterruptibly(final Thread target) {
